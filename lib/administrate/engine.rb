@@ -1,8 +1,9 @@
-require "jquery-rails"
+# require "jquery-rails"
 require "kaminari"
 require "sassc-rails"
-require "selectize-rails"
-require "sprockets/railtie"
+require "importmap-rails"
+# require "selectize-rails"
+# require "sprockets/railtie"
 
 require "administrate/namespace/resource"
 require "administrate/not_authorized_error"
@@ -22,30 +23,39 @@ module Administrate
     @@javascripts = []
     @@stylesheets = []
 
-    initializer "administrate.assets.precompile" do |app|
-      app.config.assets.precompile += [
-        "administrate/application.js",
-        "administrate/application.css",
-      ]
+    # NOTE: add engine manifest to precompile assets in production, if you don't have this yet.
+    initializer "administrate.assets" do |app|
+      app.config.assets.precompile += %w[administrate_manifest]
     end
 
-    def self.add_javascript(script)
-      @@javascripts << script
+    initializer "administrate.importmap", before: "importmap" do |app|
+      app.config.importmap.paths << Engine.root.join("config/importmap.rb")
     end
 
-    def self.add_stylesheet(stylesheet)
-      @@stylesheets << stylesheet
-    end
+    # initializer "administrate.assets.precompile" do |app|
+    #   app.config.assets.precompile += [
+    #     "administrate/application.js",
+    #     "administrate/application.css",
+    #   ]
+    # end
 
-    def self.stylesheets
-      @@stylesheets
-    end
+    # def self.add_javascript(script)
+    #   @@javascripts << script
+    # end
 
-    def self.javascripts
-      @@javascripts
-    end
+    # def self.add_stylesheet(stylesheet)
+    #   @@stylesheets << stylesheet
+    # end
 
-    add_javascript "administrate/application"
-    add_stylesheet "administrate/application"
+    # def self.stylesheets
+    #   @@stylesheets
+    # end
+
+    # def self.javascripts
+    #   @@javascripts
+    # end
+
+    # add_javascript "administrate/application"
+    # add_stylesheet "administrate/application"
   end
 end

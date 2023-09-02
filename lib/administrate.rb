@@ -1,4 +1,5 @@
 require "administrate/engine"
+require "administrate/version"
 
 module Administrate
   def self.warn_of_missing_resource_class
@@ -38,4 +39,34 @@ module Administrate
       "or see the documentation for other options.",
     )
   end
+
+  class << self
+    attr_accessor :configuration, :tailwind_content
+  end
+
+  class Configuration
+    attr_reader :importmap
+
+    def initialize
+      @importmap = Importmap::Map.new
+      @importmap.draw(Engine.root.join("config/importmap.rb"))
+      @tailwind_content = [
+        "#{Administrate::Engine.root}/app/views/**/*",
+        "#{Administrate::Engine.root}/app/helpers/**/*",
+        "#{Administrate::Engine.root}/app/controllers/**/*",
+        "#{Administrate::Engine.root}/app/javascript/**/*.js"
+      ]
+    end
+  end
+
+  def self.init_config
+    self.configuration ||= Configuration.new
+  end
+
+  def self.configure
+    init_config
+    yield(configuration)
+  end
 end
+
+Administrate.init_config
