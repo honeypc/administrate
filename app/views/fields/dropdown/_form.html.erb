@@ -1,0 +1,33 @@
+<%#
+# BelongsTo Form Partial
+
+This partial renders an input element for belongs_to relationships.
+By default, the input is a collection select box
+that displays all possible records to associate with.
+
+## Local variables:
+
+- `f`:
+  A Rails form generator, used to help create the appropriate input fields.
+- `field`:
+  An instance of [Administrate::Field::BelongsTo][1].
+  Contains helper methods for displaying a collection select box.
+
+[1]: http://www.rubydoc.info/gems/administrate/Administrate/Field/BelongsTo
+%>
+
+<div class="field-unit__label">
+  <%= f.label field.permitted_attribute %>
+</div>
+<div class="field-unit__field flex justify-between items-center gap-3">
+  <div class="grow">
+    <%= f.select(field.permitted_attribute,
+               options_for_select(field.associated_resource_options, field.selected_option),
+               { include_blank: field.include_blank_option }, id: field.permitted_attribute) %>
+  </div>
+  <%= link_to send("new_admin_#{field.name.classify.underscore}_path", format: :turbo_stream), class: "btn btn--primary", data: { modal: true, remote: true, turbo_frame: :add_new_modal } do %>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  <% end %>
+</div>
