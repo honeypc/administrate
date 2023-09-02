@@ -3,7 +3,30 @@ ruby "3.2.2" unless ENV["CI"]
 
 gemspec
 
-gem "administrate-field-image"
+%w[
+  image
+  nested_has_many
+  belongs_to_search
+  jsonb
+  lat_lng
+  money
+  trix
+  acts_as_taggable
+  collection_select
+  select_essential
+  lazy_belongs_to
+  scoped_belongs_to
+  lazy_has_many
+  scoped_has_many
+  globalize
+  enumerate
+  paper_trail
+  has_many_search
+].each do |field|
+  gem "administrate-field-#{field}"
+end
+
+
 gem "faker"
 gem "front_matter_parser"
 gem "globalid"
@@ -13,6 +36,7 @@ gem "pundit"
 gem "redcarpet"
 gem "sentry-raven"
 gem "unicorn"
+gem 'require_all'
 
 group :development, :test do
   gem "appraisal"
