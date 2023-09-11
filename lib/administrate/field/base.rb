@@ -52,6 +52,28 @@ module Administrate
         "/fields/#{self.class.field_type}/#{page}"
       end
 
+      def to_label_partial_path
+        if partial_exist?("#{resource.class.table_name}/label")
+          "#{resource.class.table_name}/label"
+        elsif partial_exist?("#{resource.class.table_name}/application/label")
+          "#{resource.class.table_name}/application/label"
+        elsif partial_exist?("fields/#{self.class.field_type}/label")
+          "fields/#{self.class.field_type}/label"
+        elsif partial_exist?( "fields/application/label")
+          "fields/application/label"
+        else
+          "label"
+        end
+      end
+
+      def partial_exist?(partial_path)
+        return false if partial_path.blank?
+
+        partial_name = partial_path.split(/\//).pop
+        partial_folder = partial_path.gsub("/#{partial_name}", '')
+        File.exist? Rails.root.join("app/views/#{partial_folder}/_#{partial_name.delete_prefix('.html.erb')}.html.erb")
+      end
+
       def required?
         return false unless resource.class.respond_to?(:validators_on)
 
