@@ -29,10 +29,11 @@ module Administrate
 
       private
 
-      def attribute_field(dashboard, resource, attribute_name, page)
+      def attribute_field(dashboard, resource, attribute_name, page, params = {})
+        params = options if params.blank?
         value = get_attribute_value(resource, attribute_name)
         field = dashboard.attribute_type_for(attribute_name)
-        field.new(attribute_name, value, page, resource: resource)
+        field.new(attribute_name, value, page, params.merge(resource: resource))
       end
 
       def get_attribute_value(resource, attribute_name)

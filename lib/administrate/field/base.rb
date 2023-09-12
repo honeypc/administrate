@@ -4,6 +4,8 @@ require "active_support/core_ext/string/inflections"
 module Administrate
   module Field
     class Base
+      include ActionView::LookupContext::ViewPaths
+
       def self.with_options(options = {})
         Deferred.new(self, options)
       end
@@ -35,9 +37,13 @@ module Administrate
       def initialize(attribute, data, page, options = {})
         @attribute = attribute
         @data = data
-        @page = page
+        @page = @action_name = page
         @resource = options.delete(:resource)
         @options = options
+        @form = options.delete(:form)
+        @controller_path = options.delete(:controller_path).to_s
+        @controller_name = options.delete(:controller_name).to_s
+        @params = options.delete(:params) || {}
       end
 
       def html_class
@@ -48,30 +54,61 @@ module Administrate
         attribute.to_s
       end
 
+      def resource_class
+        options[:resource_class].presence ||
+        resource&.class ||
+        controller_path.split('/').last.classify.constantize
+      end
+
+      def input_name
+        "#{resource_class.class_name}[#{name}]"
+      end
+
       def to_partial_path
         "/fields/#{self.class.field_type}/#{page}"
       end
 
       def to_label_partial_path
-        if partial_exist?("#{resource.class.table_name}/label")
-          "#{resource.class.table_name}/label"
-        elsif partial_exist?("#{resource.class.table_name}/application/label")
-          "#{resource.class.table_name}/application/label"
-        elsif partial_exist?("fields/#{self.class.field_type}/label")
-          "fields/#{self.class.field_type}/label"
-        elsif partial_exist?( "fields/application/label")
-          "fields/application/label"
-        else
-          "label"
-        end
+        partial_path('label')
+      end
+
+      def to_input_partial_path
+        partial_path('input')
+      end
+
+      def namespace
+        controller_path.split('/').first.to_sym
+      end
+
+      def controller_path
+        @controller_path ||= File.join(namespace, controller_name)
+      end
+
+      def action_path
+        File.join(controller_path, action_name)
+      end
+
+      def view_path
+        @view_path ||= File.join(Rails.root, 'app', 'views')
+      end
+
+      def partial_path(partial_name)
+        [
+          "/#{controller_path}/#{action_name}/#{partial_name}",
+          "/#{controller_path}/application/#{partial_name}",
+          "/#{namespace}/#{partial_name}",
+          "/#{namespace}/application/#{partial_name}",
+          "/fields/#{self.class.field_type}/#{page}/#{partial_name}",
+          "/fields/#{partial_name}"
+        ].detect { |p| partial_exist?(p) }.presence || partial_name
       end
 
       def partial_exist?(partial_path)
         return false if partial_path.blank?
 
-        partial_name = partial_path.split(/\//).pop
-        partial_folder = partial_path.gsub("/#{partial_name}", '')
-        File.exist? Rails.root.join("app/views/#{partial_folder}/_#{partial_name.delete_prefix('.html.erb')}.html.erb")
+        field_name = partial_path.split(/\//).pop
+        folder_path = partial_path.gsub("/#{field_name}", '')
+        File.exist? File.join(view_path, folder_path,"_#{field_name.delete_prefix('.html.erb')}.html.erb")
       end
 
       def required?
@@ -100,7 +137,7 @@ module Administrate
         end
       end
 
-      attr_reader :attribute, :data, :options, :page, :resource
+      attr_reader :attribute, :data, :options, :page, :resource, :form, :controller_path, :controller_name, :action_name, :params
     end
   end
 end
