@@ -9,7 +9,7 @@ module Administrate
       resources = apply_collection_includes(resources)
       resources = order.apply(resources)
       resources = paginate_resources(resources)
-      page = Administrate::Page::Collection.new(dashboard, order: order)
+      page = Administrate::Page::Collection.new(dashboard, resource_options.merge(order: order))
 
       render locals: {
         resources: resources,
@@ -21,7 +21,7 @@ module Administrate
 
     def show
       render locals: {
-        page: Administrate::Page::Show.new(dashboard, requested_resource),
+        page: Administrate::Page::Show.new(dashboard, requested_resource, resource_options),
       }
     end
 
@@ -29,13 +29,13 @@ module Administrate
       resource = new_resource
       authorize_resource(resource)
       render locals: {
-        page: Administrate::Page::Form.new(dashboard, resource),
+        page: Administrate::Page::Form.new(dashboard, resource, resource_options),
       }
     end
 
     def edit
       render locals: {
-        page: Administrate::Page::Form.new(dashboard, requested_resource),
+        page: Administrate::Page::Form.new(dashboard, requested_resource, resource_options),
       }
     end
 
@@ -50,7 +50,7 @@ module Administrate
         )
       else
         render :new, locals: {
-          page: Administrate::Page::Form.new(dashboard, resource),
+          page: Administrate::Page::Form.new(dashboard, resource, resource_options),
         }, status: :unprocessable_entity
       end
     end
@@ -63,7 +63,7 @@ module Administrate
         )
       else
         render :edit, locals: {
-          page: Administrate::Page::Form.new(dashboard, requested_resource),
+          page: Administrate::Page::Form.new(dashboard, requested_resource, resource_options),
         }, status: :unprocessable_entity
       end
     end
@@ -285,6 +285,16 @@ module Administrate
 
     def paginate_resources(resources)
       resources.page(params[:_page]).per(records_per_page)
+    end
+
+    def resource_options
+      {
+        controller_path: params[:controller].presence || controller_path,
+        controller_name: controller_name,
+        action_name: action_name,
+        resource_class: resource_class,
+        params: params
+      }
     end
   end
 end
