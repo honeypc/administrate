@@ -1,4 +1,4 @@
-require "belongs_to"
+require_relative "belongs_to"
 
 module Administrate
   module Field

@@ -13,6 +13,10 @@ require "administrate/field/text"
 require "administrate/field/time"
 require "administrate/field/url"
 require "administrate/field/password"
+require "administrate/field/dropdown"
+require "administrate/field/enum"
+require "administrate/field/toggle"
+require "administrate/field/ancestry"
 
 module Administrate
   class BaseDashboard

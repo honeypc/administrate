@@ -1,4 +1,4 @@
-require "boolean"
+require_relative "boolean"
 
 module Administrate
   module Field

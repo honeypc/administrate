@@ -1,4 +1,4 @@
-require "select"
+require_relative "select"
 
 module Administrate
   module Field
